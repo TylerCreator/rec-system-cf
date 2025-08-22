@@ -524,18 +524,18 @@ actual_test = get_used_services(X_test)
 # Список ВСЕХ моделей для сравнения
 models = {
     'KNN': KNNRecommender(),
+    'SVD': SVDRecommender(TruncatedSVD(n_components=10)),
     'PCA': SVDRecommender(PCA(n_components=10)),
     'NMF': SVDRecommender(NMF(n_components=10)),
-    'SVD': SVDRecommender(TruncatedSVD(n_components=10)),
     'ALS': ALSRecommender(),
+    'WRMF': WRMFRecommender(),
+    'NCF': NCFRecommender(epochs=3),
     'LightFM-WARP': LightFMRecommender(loss='warp', epochs=10),
     'PHCF-BPR': LightFMRecommender(loss='bpr', epochs=5),
     'KNN+LightFM-WARP': HybridKNNLightFMRecommender(loss='warp', epochs=10),
     'KNN+PHCF-BPR': HybridKNNLightFMRecommender(loss='bpr', epochs=5),
-    'WRMF': WRMFRecommender(),
-    'NCF': NCFRecommender(epochs=3),
     'DeepFM': DeepFMRecommender(epochs=3),
-    'SASRec': SASRecRecommender(epochs=3),
+    # 'SASRec': SASRecRecommender(epochs=3),
     'Popular': PopularRecommender(popular_services),
     'Random': RandomRecommender()
 }
@@ -712,6 +712,29 @@ ax.legend(loc='upper right', bbox_to_anchor=(1.3, 1.0))
 
 plt.tight_layout()
 plt.savefig('refactored_complete_comparison_radar.png', dpi=300, bbox_inches='tight')
+
+# Групповой столбиковый график для основных метрик
+plt.figure(figsize=(14, 8))
+models = list(results.keys())
+precision_values = [results[model]['precision'] for model in models]
+recall_values = [results[model]['recall'] for model in models]
+ndcg_values = [results[model]['ndcg'] for model in models]
+
+x = np.arange(len(models))  # позиции столбцов
+width = 0.25  # ширина столбца
+
+plt.bar(x - width, precision_values, width, label='PRECISION', color='#ff9999', alpha=0.8)
+plt.bar(x, recall_values, width, label='RECALL', color='#cc8800', alpha=0.8)
+plt.bar(x + width, ndcg_values, width, label='NDCG', color='#66b266', alpha=0.8)
+
+plt.xlabel('Алгоритмы')
+plt.ylabel('Значение метрики')
+plt.title('Основные метрики по алгоритмам', fontsize=14, fontweight='bold')
+plt.xticks(x, models, rotation=45, ha='right')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('refactored_complete_comparison_grouped_bar.png', dpi=300, bbox_inches='tight')
 
 print("Дополнительные графики сохранены")
 
